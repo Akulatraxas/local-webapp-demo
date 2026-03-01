@@ -56,8 +56,8 @@ jobs:
 
       - name: Update image tags
         run: |
-          sed -i "s|local-webapp-demo-backend:.*|local-webapp-demo-backend:${{ github.sha }}|g" gitops/test/webapp-demo/backend.yaml
-          sed -i "s|local-webapp-demo-frontend:.*|local-webapp-demo-frontend:${{ github.sha }}|g" gitops/test/webapp-demo/frontend.yaml
+          sed -i "s|local-webapp-demo-backend:.*|local-webapp-demo-backend:${{ github.sha }}|g" gitops/test/webapp-demo/backend.yml
+          sed -i "s|local-webapp-demo-frontend:.*|local-webapp-demo-frontend:${{ github.sha }}|g" gitops/test/webapp-demo/frontend.yml
 
       - name: Commit & Push
         run: |
