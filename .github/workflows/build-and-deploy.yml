@@ -14,24 +14,39 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout App Repo
         uses: actions/checkout@v4
 
+      # 1. Use the official Login Action
       - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Backend
-        run: |
-          docker build -t $IMAGE_BACKEND:${{ github.sha }} ./backend
-          docker push $IMAGE_BACKEND:${{ github.sha }}
+      # 2. Build and Push Backend
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.IMAGE_BACKEND }}:${{ github.sha }}, ${{ env.IMAGE_BACKEND }:latest
 
-      - name: Build Frontend
-        run: |
-          docker build -t $IMAGE_FRONTEND:${{ github.sha }} ./frontend
-          docker push $IMAGE_FRONTEND:${{ github.sha }}
+      # 3. Build and Push Frontend
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ env.IMAGE_FRONTEND }}:${{ github.sha }}, ${{ env.IMAGE_FRONTEND }:latest
 
+      # 4. GitOps Update
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
@@ -47,7 +62,7 @@ jobs:
       - name: Commit & Push
         run: |
           cd gitops
-          git config user.name "Akulatraxas"
-          git config user.email "akulatraxas.de@googlemail.com"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           git commit -am "Update images to ${{ github.sha }}"
           git push
