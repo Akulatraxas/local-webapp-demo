@@ -1,0 +1,53 @@
+name: Build and Update GitOps
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  # local-webapp-demo
+  IMAGE_BACKEND: ghcr.io/akulatraxas/local-webapp-demo-backend
+  IMAGE_FRONTEND: ghcr.io/akulatraxas/local-webapp-demo-frontend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+      - name: Build Backend
+        run: |
+          docker build -t $IMAGE_BACKEND:${{ github.sha }} ./backend
+          docker push $IMAGE_BACKEND:${{ github.sha }}
+
+      - name: Build Frontend
+        run: |
+          docker build -t $IMAGE_FRONTEND:${{ github.sha }} ./frontend
+          docker push $IMAGE_FRONTEND:${{ github.sha }}
+
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          repository: Akulatraxas/devops-argocd
+          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          path: gitops
+
+      - name: Update image tags
+        run: |
+          sed -i "s|webapp-backend:.*|webapp-backend:${{ github.sha }}|g" gitops/test/webapp-demo/backend.yaml
+          sed -i "s|webapp-frontend:.*|webapp-frontend:${{ github.sha }}|g" gitops/test/webapp-demo/frontend.yaml
+
+      - name: Commit & Push
+        run: |
+          cd gitops
+          git config user.name "Akulatraxas"
+          git config user.email "akulatraxas.de@googlemail.com"
+          git commit -am "Update images to ${{ github.sha }}"
+          git push

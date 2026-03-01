@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebApp Demo</title>
+</head>
+<body>
+  <h1>Frontend</h1>
+  <div id="result">Loading...</div>
+
+  <script>
+    fetch("/api")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").innerText =
+          data.message + " | ENV: " + data.environment;
+      });
+  </script>
+</body>
+</html>
