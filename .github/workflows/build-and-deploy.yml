@@ -56,8 +56,9 @@ jobs:
 
       - name: Update image tags
         run: |
-          sed -i "s|local-webapp-demo-backend:.*|local-webapp-demo-backend:${{ github.sha }}|g" gitops/test/webapp-demo/backend.yml
-          sed -i "s|local-webapp-demo-frontend:.*|local-webapp-demo-frontend:${{ github.sha }}|g" gitops/test/webapp-demo/frontend.yml
+          cd gitops/test/webapp-demo
+          kustomize edit set image ghcr.io/akulatraxas/local-webapp-demo-backend=ghcr.io/akulatraxas/local-webapp-demo-backend:${{ github.sha }}
+          kustomize edit set image ghcr.io/akulatraxas/local-webapp-demo-frontend=ghcr.io/akulatraxas/local-webapp-demo-frontend:${{ github.sha }}
 
       - name: Commit & Push
         run: |
