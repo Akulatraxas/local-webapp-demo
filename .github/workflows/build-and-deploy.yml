@@ -56,7 +56,7 @@ jobs:
 
       - name: Update image tags
         run: |
-          cd gitops/test/webapp-demo
+          cd gitops/apps/local-webapp-demo/overlays/test
           kustomize edit set image ghcr.io/akulatraxas/local-webapp-demo-backend=ghcr.io/akulatraxas/local-webapp-demo-backend:${{ github.sha }}
           kustomize edit set image ghcr.io/akulatraxas/local-webapp-demo-frontend=ghcr.io/akulatraxas/local-webapp-demo-frontend:${{ github.sha }}
 

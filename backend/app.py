@@ -8,4 +8,5 @@ def root():
     return {
         "message": "Hello from backend",
         "environment": os.getenv("APP_ENV", "not-set")
+        "apikey": os.getenv("API_KEY", "not-set")
     }
